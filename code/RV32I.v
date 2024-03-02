@@ -6,14 +6,12 @@ module RV32I(Clk,Rst);
 	input Clk,Rst;
 	// clock , reset setting
 
-//---------IF Stage Declarations----------------------------------
 
 	wire PCSrc; // branch or not 
 	wire [31:0] PCin,PC,PC_4; // PCin -> branch or not, PC-> current inst address , PC_4 -> PC+4;
 	wire [31:0] AddressIn,Instruction; // ADDRESS IN -> rael value
 	reg  [31:0] PCreg; // 
 
-//---------ID Stage Declarations-------------------------------------------
 
 	wire ALUsrc,MemRead,MemWrite,MemtoReg,RegWrite,AddSel,Link,Branch1,Branch0,Lui;
 	wire regWen_WB;
@@ -24,7 +22,6 @@ module RV32I(Clk,Rst);
 	wire [11:0] ControlWire1;
 	wire [31:0] data1,data2,writeData_WB,Instruction_ID,Immediate_ID;
 
-//---------EX Stage Declarations-------------------------------------------
 
 	wire Zero,Lui_Ex,ALUsrc_Ex,RegWrite_EX,Branch1_Ex;
 	wire [1:0] AluOp_Ex;
@@ -36,7 +33,6 @@ module RV32I(Clk,Rst);
 	wire [31:0] ALUresult,A,B,A0,B0,A1,B1;
 	wire [31:0] Imm32,BrAdd,PC_EX,data1_Ex,data2_Ex;
 
-//---------MEM Stage Declarations------------------------------------------
 
 	wire zero_MEM,AddSel_MEM,Link_MEM,Branch_MEM_1,Branch_MEM_0,memWrite_MEM,memRead_MEM,RegWrite_MEM;
 	wire [ 1:0] ControlWire3;
@@ -45,12 +41,10 @@ module RV32I(Clk,Rst);
 
 
 
-//---------WB Stage Declarations-------------------------------------------
 	
 	wire RegWrite_WB,MemtoReg_WB;
 	wire [31:0] readData_WB,writeBack_WB;
 
-//-------------------------------------------------------------------------
 
 	wire memRead_EX;
 	
@@ -250,9 +244,6 @@ assign rd_WB 		= MEM_WB_pipereg[68:64]; // number of destination Register
 
  	Mux2 WriteBackSel(writeData_WB,readData_WB,writeBack_WB,MemtoReg_WB); 
 
-/*----------------------------------------------------------------------------------------------------------
-												HAZARD DETECTION  (STALLS, FLUSHES)
-	-----------------------------------------------------------------------------------------------------------*/
 
 // structual hazard -> XXXXXXXXXXXXXX
 // data hazard -> Using stalling and Forwarding
@@ -302,9 +293,6 @@ always@(*)				// Branch & Jump Flush
 			end
 	end
 
-/*----------------------------------------------------------------------------------------------------------
-												FORWARDING UNIT
-	-----------------------------------------------------------------------------------------------------------*/
 
 assign Rs1_ID_EX = ID_EX_pipereg  [196:192];
 assign Rs2_ID_EX = ID_EX_pipereg  [191:187];
