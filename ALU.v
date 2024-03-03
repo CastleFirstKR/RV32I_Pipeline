@@ -1,14 +1,11 @@
 `timescale 1ns / 1ps
-
-
 module ALU(Zero, ALUresult, A, B, AluOp);
     input  		[31:0]	A,B;
     input 		[ 3:0]	AluOp;
     output			Zero;
     output	reg	[31:0]	ALUresult; 
     
-always@(AluOp,A,B)
-	begin
+	always@(AluOp,A,B) begin
 		case (AluOp)
 			4'b0000 : ALUresult<= A&B;   	 	//AND
 			4'b0001 : ALUresult<= A|B;		//OR
