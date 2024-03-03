@@ -1,42 +1,23 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2024/02/15 15:31:30
-// Design Name: 
-// Module Name: ControlDecoder
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module Control(Opcode,funct3,ALUsrc,MemtoReg,RegWrite,MemRead,MemWrite,AddSel,Link,Branch1,Branch0,ALUOp,Lui);
 
-output 	reg ALUsrc,RegWrite,MemWrite,MemtoReg,MemRead,RegDst,AddSel,Link,Lui;
-output wire  Branch1,Branch0;
-output [1:0] ALUOp;
-input  [6:0] Opcode;
-input  [2:0] funct3;
 
-reg ALUOp1,ALUOp0;
-reg    [1:0] Branch;
-initial begin Branch =2'b00; end
-
-assign {Branch1,Branch0}=Branch;
-assign ALUOp= {ALUOp1,ALUOp0};
+	input  [6:0] Opcode;
+	input  [2:0] funct3;
 	
-	always@(Opcode)
-	begin
+	output 	reg ALUsrc,RegWrite,MemWrite,MemtoReg,MemRead,RegDst,AddSel,Link,Lui;
+	output wire  Branch1,Branch0;
+	output [1:0] ALUOp;
+	
+	reg ALUOp1,ALUOp0;
+	reg    [1:0] Branch;
+	initial begin Branch =2'b00; end
+
+	assign {Branch1,Branch0}=Branch;
+	assign ALUOp= {ALUOp1,ALUOp0};
+	
+	always@(Opcode) begin
 		case(Opcode)
 			7'b0110011: 	// R  type   /// inst[6:0]
 				begin
@@ -172,13 +153,14 @@ endmodule
 
 // ALU Controller
 module ALUControl(ALUCnt,AluOp,funct3,funct7);		// Takes in Instructions Funct field of 6 bits along with 2 bits of Alu Op decoded by Main Control
-output reg 	[3:0] ALUCnt;
-input  		[2:0] funct3;
-input		[6:0] funct7;
-input  		[1:0] AluOp;
 
-	always@(AluOp,funct3,funct7)
-		begin
+	input  		[2:0] funct3;
+	input		[6:0] funct7;
+	input  		[1:0] AluOp;
+
+	output reg 	[3:0] ALUCnt;
+	
+	always@(AluOp,funct3,funct7) begin
 		case(AluOp)
 			2'b00 : // LW or SW 
 				ALUCnt = 4'b0010;
