@@ -1,19 +1,20 @@
 `timescale 1ns / 1ps
 
-
-
 module Control(Opcode,funct3,ALUsrc,MemtoReg,RegWrite,MemRead,MemWrite,AddSel,Link,Branch1,Branch0,ALUOp,Lui);
 
-output [1:0] ALUOp;
-input  [6:0] Opcode;
-input  [2:0] funct3;
+	input  [6:0] Opcode;
+	input  [2:0] funct3;
+	
+	output [1:0] ALUOp;
+	output 	reg ALUsrc,RegWrite,MemWrite,MemtoReg,MemRead,AddSel,Link,Lui;
+	output wire  Branch1,Branch0;
 
-output 	reg ALUsrc,RegWrite,MemWrite,MemtoReg,MemRead,AddSel,Link,Lui;
-output wire  Branch1,Branch0;
-
-reg ALUOp1,ALUOp0;
-reg    [1:0] Branch;
-initial begin Branch =2'b00; end
+	reg ALUOp1,ALUOp0;
+	reg    [1:0] Branch;
+	
+	initial begin 
+		Branch =2'b00; 
+	end
 
 assign {Branch1,Branch0}=Branch;
 
@@ -175,10 +176,12 @@ endmodule
 // ALU Controller
 
 module ALUControl(ALUCnt,AluOp,funct3,funct7);		// Takes in Instructions Funct field of 6 bits along with 2 bits of Alu Op decoded by Main Control
-output reg 	[3:0] ALUCnt;
-input  		[2:0] funct3;
-input		[6:0] funct7;
-input  		[1:0] AluOp;
+
+	input  		[2:0] funct3;
+	input		[6:0] funct7;
+	input  		[1:0] AluOp;
+	
+	output reg 	[3:0] ALUCnt;
 
 /// AluOp -> divide by type of instruction
 
