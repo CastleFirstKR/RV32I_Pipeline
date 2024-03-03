@@ -3,6 +3,7 @@
 module ImGen(Out,Instruction);
 
     input  		[31:0] Instruction;
+    
     output reg  [31:0] Out;
     
     wire [6:0] Opcode;
