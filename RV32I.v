@@ -6,14 +6,10 @@ module RV32I(Clk,Rst);
 	input Clk,Rst;
 	// clock , reset setting
 
-//---------IF Stage Declarations----------------------------------
-
 	wire PCSrc; // branch or not 
 	wire [31:0] PCin,PC,PC_4; // PCin -> branch or not, PC-> current inst address , PC_4 -> PC+4;
 	wire [31:0] AddressIn,Instruction; // ADDRESS IN -> rael value
 	reg  [31:0] PCreg; // 
-
-//---------ID Stage Declarations-------------------------------------------
 
 	wire ALUsrc,MemRead,MemWrite,MemtoReg,RegWrite,AddSel,Link,Branch1,Branch0,Lui;
 	wire regWen_WB;
@@ -23,8 +19,6 @@ module RV32I(Clk,Rst);
 	wire [6:0] Opcode;
 	wire [11:0] ControlWire1;
 	wire [31:0] data1,data2,writeData_WB,Instruction_ID,Immediate_ID;
-
-//---------EX Stage Declarations-------------------------------------------
 
 	wire Zero,Lui_Ex,ALUsrc_Ex,RegWrite_EX,Branch1_Ex;
 	wire [1:0] AluOp_Ex;
@@ -36,21 +30,13 @@ module RV32I(Clk,Rst);
 	wire [31:0] ALUresult,A,B,A0,B0,A1,B1;
 	wire [31:0] Imm32,BrAdd,PC_EX,data1_Ex,data2_Ex;
 
-//---------MEM Stage Declarations------------------------------------------
-
 	wire zero_MEM,AddSel_MEM,Link_MEM,Branch_MEM_1,Branch_MEM_0,memWrite_MEM,memRead_MEM,RegWrite_MEM;
 	wire [ 1:0] ControlWire3;
  	wire [ 4:0] Rd_MEM;
 	wire [31:0] OffsetAddress,BranchOffset,ALUAddress,ReadData,WriteData_MEM,writeBack_MEM,PCLink;
-
-
-
-//---------WB Stage Declarations-------------------------------------------
 	
 	wire RegWrite_WB,MemtoReg_WB;
 	wire [31:0] readData_WB,writeBack_WB;
-
-//-------------------------------------------------------------------------
 
 	wire memRead_EX;
 	
@@ -137,12 +123,10 @@ assign ControlWire1= (NOP || flushID) ? 12'b0XXXXX0XXXX:{Branch1,Lui,ALUOp,ALUsr
 	
 	
 	
-always @(posedge Clk or negedge Rst)
- begin
+always @(posedge Clk or negedge Rst)  begin
  	if(~Rst)
  		ID_EX_pipereg <= 197'd0;
- 	else
- 	begin
+ 	else begin
 		ID_EX_pipereg[ 31: 0 ] <= IF_ID_pipereg[63:32]; 	  // Forward PC.
 		ID_EX_pipereg[ 63:32 ] <= data1 ;	  			     //  Forward Rs1 Data
 		ID_EX_pipereg[ 95:64 ] <= data2 ;				  	//   Forward Rs2 Data
@@ -153,7 +137,7 @@ always @(posedge Clk or negedge Rst)
 		ID_EX_pipereg[186:177] <= {Instruction_ID[14:12],Instruction_ID[31:25]} ;// {func3,func7}
 		ID_EX_pipereg[196:187] <= {Rs1_ID,Rs2_ID};    // Store for Forwarding
  	end
- end
+end
 
 assign Imm32=ID_EX_pipereg[127:96];
 assign PC_EX=ID_EX_pipereg[ 31: 0];
@@ -175,7 +159,7 @@ assign ControlWire2= (flushEX) ? 9'b00xx0xxxx:
         {Branch1_Ex,Zero,ID_EX_pipereg[171:165]};
 	// flush EX deasserts control introducing Bubbles/No operations
 
-    // PC_EX -> current PC value,  imme -> 1bit°¡ »ý·«µÇ¾îÀÖ´Ù. 2byte instruction Áö¿øÀ» °í·ÁÇÏ¿©¼­
+    // PC_EX -> current PC value,  imme -> 1bitê°€ ìƒëžµë˜ì–´ìžˆë‹¤. 2byte instruction ì§€ì›ì„ ê³ ë ¤í•˜ì—¬ì„œ
 	Add AddressAdder(BrAdd,PC_EX,{Imm32[30:0],1'b0}); 
 	// Adder for Computing Branch Addresses (Imm32 bits are left shifted)
 	// lnA -> data1_Ex -> register rs1 value,  ALUAddress ->  ALUResult, writeData_WB -> WB level data(data forwarding process)
@@ -190,12 +174,10 @@ assign ControlWire2= (flushEX) ? 9'b00xx0xxxx:
 
 
 
-always@(posedge Clk or negedge Rst)
-begin
+always@(posedge Clk or negedge Rst) begin
 	if(~Rst)
 		EX_MEM_pipereg <=142'd0;
-	else
-		begin
+	else begin
 		EX_MEM_pipereg [ 31: 0 ] <= ALUresult;					  // ALU Result
 		EX_MEM_pipereg [ 63: 32] <= BrAdd;						 // PC+Offset ,Branch Address
 		EX_MEM_pipereg [ 95: 64] <= B1;							// Rs2 data to write to Memory
@@ -228,12 +210,10 @@ assign RegWrite_MEM = EX_MEM_pipereg[134];
 	Mux2 LinkSel(writeBack_MEM,ALUAddress,PCLink,Link_MEM); 		  // Selects between writing back PC+4/ALUOut
 	DataMemoryFile DMF(ReadData,ALUAddress,WriteData_MEM,memWrite_MEM,memRead_MEM,Clk,Rst);
 
-always @(posedge Clk or negedge Rst) 
-begin
+always @(posedge Clk or negedge Rst) begin
 	if(~Rst) 
 	MEM_WB_pipereg <= 70'd0;
-	else
-	 begin
+	else begin
 	 	MEM_WB_pipereg[31:0 ] <= ReadData; // Data read from Memory
 	 	MEM_WB_pipereg[63:32] <= writeBack_MEM; // Data from ALU / Link Reg
 	 	MEM_WB_pipereg[68:64] <= Rd_MEM; // Write Data Select Register
@@ -250,57 +230,51 @@ assign rd_WB 		= MEM_WB_pipereg[68:64]; // number of destination Register
 
  	Mux2 WriteBackSel(writeData_WB,readData_WB,writeBack_WB,MemtoReg_WB); 
 
-/*----------------------------------------------------------------------------------------------------------
-												HAZARD DETECTION  (STALLS, FLUSHES)
-	-----------------------------------------------------------------------------------------------------------*/
-
 // structual hazard -> XXXXXXXXXXXXXX
 // data hazard -> Using stalling and Forwarding
 // control hazard -> Using flush  
 
-// memRead_EX -> Å¬·°¿¡ µû¶ó 1 ¿¡¼­ X·Î º¯ÇÏ°Ô µÉ °ÍÀÌ´Ù.
-// Controlwire°¡  XXXXXX·Î º¯ÇÏ±â ¶§¹®ÀÌ´Ù. 
+// memRead_EX -> í´ëŸ­ì— ë”°ë¼ 1 ì—ì„œ Xë¡œ ë³€í•˜ê²Œ ë  ê²ƒì´ë‹¤.
+// Controlwireê°€  XXXXXXë¡œ ë³€í•˜ê¸° ë•Œë¬¸ì´ë‹¤. 
 assign memRead_EX= ID_EX_pipereg[167]; // MemRead 
 
 
-// MEMrEAD_Ex -> clk ¿¡ µû¶ó º¯È­ÇÏ°Ô µÈ´Ù. 
-always@(*)				// Stall due to Load 
-	begin
-	//,Rs2 , Rs1_ID ´Â º¯È­ÇÏÁö ¾Ê´Â´Ù .(STALL ÇÏ´Â Áß¿¡) => instruction Fetch µÈ °Ô °°±â¶§¹®¿¡ 
-	// stall signal -> 1 clk ¹ß»ýÇÑ´Ù. 
-	// stall ÀÌÈÄ¿¡´Â LW (MEM) and ADD (ID) ÀÎ »óÅÂÀÌ¹Ç·Î data forwarding ÀÛ¾÷À» ÁøÇàÇÏ¿© 
-	// stall ±â´ÉÀ» ÃÖ¼ÒÈ­ ÇØÁØ´Ù.
+// MEMrEAD_Ex -> clk ì— ë”°ë¼ ë³€í™”í•˜ê²Œ ëœë‹¤. 
+always@(*) begin			// Stall due to Load 
+	//,Rs2 , Rs1_ID ëŠ” ë³€í™”í•˜ì§€ ì•ŠëŠ”ë‹¤ .(STALL í•˜ëŠ” ì¤‘ì—) => instruction Fetch ëœ ê²Œ ê°™ê¸°ë•Œë¬¸ì— 
+	// stall signal -> 1 clk ë°œìƒí•œë‹¤. 
+	// stall ì´í›„ì—ëŠ” LW (MEM) and ADD (ID) ì¸ ìƒíƒœì´ë¯€ë¡œ data forwarding ìž‘ì—…ì„ ì§„í–‰í•˜ì—¬ 
+	// stall ê¸°ëŠ¥ì„ ìµœì†Œí™” í•´ì¤€ë‹¤.
 	
-		if(memRead_EX && ((Rd_EX == Rs1_ID) || (Rd_EX == Rs2_ID))) // Load data is used for next INSTRUCTION  -> Stalling until load data to RD 
+	if(memRead_EX && ((Rd_EX == Rs1_ID) || (Rd_EX == Rs2_ID))) 
+			begin // Load data is used for next INSTRUCTION  -> Stalling until load data to RD 
 			// stalling by load -> stall Instruction Fetch, Instruction Decode 
-			begin
+			
 				stallIF=1'b1;
 				stallID=1'b1;
 				NOP=1'b1;
 			end
-		else
-			begin
+		else begin
 				stallIF=1'b0;
 				stallID=1'b0;
 				NOP=1'b0;
 			end
-	end
+end
 
-always@(*)				// Branch & Jump Flush
-	begin
+always@(*) begin			// Branch & Jump Flush
+
 		if(PCSrc)	// Next address is Jump/Branch
 			begin
 				flushIF=1'b1;
 				flushID=1'b1;
 				flushEX=1'b1;
 			end
-		else
-			begin
+		else begin
 				flushIF=1'b0;
 				flushID=1'b0;
 				flushEX=1'b0;
 			end
-	end
+end
 
 /*----------------------------------------------------------------------------------------------------------
 												FORWARDING UNIT
@@ -312,8 +286,8 @@ assign Rd_EX_MEM = EX_MEM_pipereg [132:128];
 assign Rd_MEM_WB = MEM_WB_pipereg [ 68:64];
 
 
-always@(*)			// Register Forwarding Unit 
-	begin
+always@(*) begin			// Register Forwarding Unit 
+	
 	   // register process  ADD ,SUB
 		if(RegWrite_MEM  && Rd_EX_MEM !=5'd0 && Rd_EX_MEM == Rs1_ID_EX) // ID -- EX  Dependency Rs1
 			InA=2'b01;
@@ -334,10 +308,8 @@ always@(*)			// Register Forwarding Unit
 			InB=2'b10;
 		else 
 			InB=2'b00;
-	end	
+end	
 
 
 endmodule
-/*----------------------------------------------------------------------------------------------------------
-												      END
-	-----------------------------------------------------------------------------------------------------------*/
+
