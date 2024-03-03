@@ -5,6 +5,7 @@ module Mux2(Out, I0, I1, Sel); // 2 X 1 ,32 Bit wide
 
     input  [31:0] I0,I1;
     input  Sel;
+    
     output [31:0] Out;
     
     assign Out=(~Sel)?I0:I1;
@@ -17,8 +18,7 @@ module Mux4(Out, I0, I1, I2, I3, Sel); // 4 X 1 ,32 Bit wide
      input  [1:0] Sel;
      output reg [31:0] Out;
     
-    always@(I0,I1,I2,I3,Sel)
-    begin
+    always@(I0,I1,I2,I3,Sel) begin
         case(Sel)
             2'b00: Out=I0;
             2'b01: Out=I1;
