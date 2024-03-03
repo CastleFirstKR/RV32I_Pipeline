@@ -33,17 +33,15 @@ module RegisterFile(data1, data2, read1, read2, writeReg, writeData, Clk, Rst, r
         $readmemh("Rmem.txt",registerbank);  //Register Reset
     end
 
-	always @(posedge Clk) 
-	begin
+	always @(posedge Clk) begin
 		if(~Rst) 
 			begin
 			 	$readmemh("Rmem.txt",registerbank);
 			 end
 	end
 
-	always @( * ) 					// Writing at Negative Edge of clock
-	begin
-		registerbank[0] <= 32'd0;	// Regster 0¹øÀº Ç×»ó 0ÀÇ°ªÀ» °¡Áø´Ù. 
+	always @( * ) 	begin				// Writing at Negative Edge of clock
+		registerbank[0] <= 32'd0;	// Regster 0Â¹Ã¸Ã€Âº Ã‡Ã—Â»Ã³ 0Ã€Ã‡Â°ÂªÃ€Â» Â°Â¡ÃÃ¸Â´Ã™. 
 	
 		if(regWen)
 			registerbank[writeReg] <= writeData;
